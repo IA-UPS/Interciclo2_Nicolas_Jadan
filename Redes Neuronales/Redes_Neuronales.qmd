@@ -42,7 +42,15 @@ boxplot(data[, -1], col = "lightgreen", main = "Distribución de variables", xla
 Este código generaría una ventana gráfica , mostrando boxplots para las variables del conjunto de datos Cada boxplot mostraría la distribución de los valores de las variables correspondientes.
 
 ```{r}
-variables <- names(data)[-2] grupos <- split(variables, ceiling(seq_along(variables) / 2))  for (i in seq_along(grupos)) {   par(mfrow = c(1, 1)) 
+
+variables <- names(data)[-2]
+grupos <- split(variables, ceiling(seq_along(variables) / 2))
+
+for (i in seq_along(grupos)) {
+  par(mfrow = c(1, 1))  # Restablece la ventana gráfica a 1 fila y 1 columna
+  boxplot(data[, grupos[[i]]], col = "red", main = paste("Plot", i),
+          xlab = "Var", ylab = "Values")
+}
 ```
 
 Estos gráficos ilustran la distribución de los valores de las variables pertenecientes al primer grupo. La información sobre los cuartiles y la mediana se representa mediante los elementos de la caja en el gráfico, mientras que los valores mínimo y máximo se indican mediante los "bigotes". Además, es posible identificar la existencia de valores atípicos o extremos a través de los puntos individuales que se encuentran fuera de los "bigotes". Estos gráficos proporcionan una representación visual completa de la distribución de los valores de las variables y permiten observar patrones y posibles anomalías en los datos.
@@ -52,7 +60,10 @@ Estos gráficos ilustran la distribución de los valores de las variables perten
 La función **`normalize`** toma un vector y lo normaliza en el rango de 0 a 1, mientras que el código proporcionado aplica esta función a todas las columnas de un data frame, excepto a una columna específica, y guarda el resultado en un nuevo data frame llamado **`data_norm`**.
 
 ```{r}
-normalize <- function(x) { return((x - min(x)) / (max(x) - min(x))) } data_norm <- as.data.frame(lapply(data[,-2],normalize))
+normalize <- function(x) {
+return((x - min(x)) / (max(x) - min(x)))
+}
+data_norm <- as.data.frame(lapply(data[,-2],normalize))
 ```
 
 # Creación de variables binarias.
@@ -60,18 +71,20 @@ normalize <- function(x) { return((x - min(x)) / (max(x) - min(x))) } data_norm 
 Se asigna valores booleanos a dos columnas nuevas, "M" y "B".
 
 ```{r}
-data_norm$M <- ifelse(data$V2 == "M", TRUE, FALSE) data_norm$B <- ifelse(data$V2 == "B", TRUE, FALSE)
+data_norm$M <- ifelse(data$V2 == "M", TRUE, FALSE)
+data_norm$B <- ifelse(data$V2 == "B", TRUE, FALSE)
 ```
 
 # **Interpretacion**
 
 ```{r}
-par(mfrow = c(1, 1)) 
-for (i in 1:3) {   
-  col_start <- (i - 1) * 11 + 1   
-  col_end <- i * 11      
-
-  boxplot(data_norm[, col_start:col_end], main = 'Datos escalados 0,1', col = 'lightgreen', cex.axis = 0.4)   abline(h = 0.5, lwd = 2) 
+par(mfrow = c(1, 1))
+for (i in 1:3) {
+  col_start <- (i - 1) * 11 + 1
+  col_end <- i * 11
+  
+  boxplot(data_norm[, col_start:col_end], main = 'Datos escalados 0,1', col = 'lightgreen', cex.axis = 0.4)
+  abline(h = 0.5, lwd = 2)
 }
 ```
 
@@ -86,8 +99,11 @@ n <- nrow(data_norm)
 Se realiza una división aleatoria del marco de datos "data_nrm" en un conjunto de entrenamiento y un conjunto de prueba.
 
 ```{r}
-set.seed(1234) n_train <- floor(2/3 * nrow(data_norm))  train <- sample(nrow(data_norm), n_train) 
-data_norm.train <- data_norm[train, ] 
+set.seed(1234)
+n_train <- floor(2/3 * nrow(data_norm))
+
+train <- sample(nrow(data_norm), n_train)
+data_norm.train <- data_norm[train, ]
 data_norm.test <- data_norm[-train, ]
 ```
 
