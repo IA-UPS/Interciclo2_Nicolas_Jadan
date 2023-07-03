@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Redes Neuronales"
 author: "Maria Jose Bustamante - Nicolas Jadan"
 format: pdf
 editor: visual
