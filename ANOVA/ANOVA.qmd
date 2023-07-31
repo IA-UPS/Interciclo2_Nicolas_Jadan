@@ -128,7 +128,7 @@ TukeyHSD(res.aov)
     Es posible usar la función **glht**() \[en el paquete **multcomp**\] para realizar múltiples procedimientos de comparación para un ANOVA. **GLHT** significa pruebas generales de hipótesis lineales. El formato simplificado es el siguiente:
 
 ```{r}
-summary(glht(res.aov, linfct = mcp(group = "Tukey")))
+#summary(glht(res.aov, linfct = mcp(group = "Tukey")))
 
 ```
 
