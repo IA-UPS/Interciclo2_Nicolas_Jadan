@@ -2,12 +2,12 @@
 title: "Regresión Linear Múltiple"
 format: pdf
 editor: visual
-author: Nicolás Jadán
+author: "Nicolás Jadán"
 ---
 
-**La regresión lineal múltiple** es una generalización de la regresión lineal simple, en el sentido de que este enfoque permite evaluar las relaciones lineales entre una variable de respuesta (cuantitativa) y varias variables explicativas (cuantitativas o cualitativas).
+La regresión lineal múltiple es una técnica estadística que amplía la regresión lineal simple para evaluar relaciones lineales entre una variable de respuesta (cuantitativa) y múltiples variables explicativas (cuantitativas o cualitativas).
 
--   Cargamos todas las librerías que vamos a utilizar.
+A continuación, se cargan diversas librerías en R para facilitar el análisis de datos.
 
 ```{r}
 library(ggplot2)
@@ -20,7 +20,7 @@ library(car)
 library(carData)
 ```
 
-Se realiza la evaluación de si existe una relación lineal entre la distancia recorrida con un galón de combustible y el peso de los automóviles. Utilizando el conjunto de datos `mtcars.`
+A continuación, procedemos a evaluar si existe una relación lineal entre la distancia recorrida con un galón de combustible (mpg) y el peso de los automóviles (wt) utilizando el conjunto de datos "mtcars":
 
 ```{r}
 # Cargamos el conjunto de datos
@@ -39,26 +39,30 @@ ggplot(data, aes(x = wt, y = mpg)) +
 
 El diagrama de dispersión muestra una relación negativa entra la distacnia recorrida de un galón de combustible y el peso de un auto.
 
--   Para realizar una regresión lineal en R, usamos la función `lm ()` (que significa modelo lineal).
+Para realizar una regresión lineal en R, usamos la función lm() (que significa modelo lineal).
 
 ```{r}
 model <- lm(mpg ~ wt, data = data)
 summary(model)
 ```
 
-El valor *p* = 1,29e-10 \< 0,05, por lo que rechazamos la hipótesis nula en el nivel de significancia ⍺=5%. Por lo tanto, concluimos que existe una **relación significativa entre el peso de un automóvil y su consumo de combustible**.
+El valor p = 1,29e-10 \< 0,05, por lo que rechazamos la hipótesis nula en el nivel de significancia ⍺=5%. Por lo tanto, concluimos que existe una relación significativa entre el peso de un automóvil y su consumo de combustible.
 
-## Condiciones de Aplicación
+# Condiciones de Aplicación
 
-**Independencia:** Las observaciones deben ser independientes. Es el plan de muestreo y el diseño experimental los que suelen proporcionar información sobre esta condición. Si los datos provienen de diferentes individuos o unidades experimentales, por lo general son independientes. Por otro lado, si se miden los mismos individuos en diferentes períodos, los datos probablemente no sean independientes.
+Existen tres condiciones fundamentales que se deben tener en cuenta al aplicar el análisis de regresión lineal:
 
-**Normalidad de los residuos:** Para tamaños de muestra grandes, los intervalos de confianza y las pruebas de los coeficientes son (aproximadamente) válidos ya sea que el error siga una distribución normal o no (una consecuencia del teorema del límite central). Para tamaños de muestra pequeños, los residuos deben seguir una distribución normal. Esta condición se puede probar visualmente (a través de un gráfico QQ y/o un histograma), o más formalmente (a través de la prueba de Shapiro Wilk).
+1.  Independencia: Las observaciones deben ser independientes entre sí. Esto significa que los datos deben provenir de diferentes individuos o unidades experimentales para que se consideren independientes. Si los datos se recopilan en diferentes momentos para los mismos individuos, es probable que no cumplan con esta condición de independencia.
 
-**Homocedasticidad de los residuales:** La varianza de los errores debe ser constante. Hay una falta de homocedasticidad cuando la dispersión de los residuos aumenta con los valores predichos (valores ajustados). Esta condición se puede probar visualmente (trazando los residuos estandarizados frente a los valores ajustados) o más formalmente (a través de la prueba de Breusch-Pagan).
+2.  Normalidad de los residuos: Para muestras grandes, los intervalos de confianza y las pruebas de los coeficientes son aproximadamente válidos, independientemente de si los errores (residuos) siguen o no una distribución normal. Sin embargo, para muestras pequeñas, es importante que los residuos se distribuyan de manera aproximadamente normal. Esto puede verificarse visualmente mediante un gráfico QQ (cuantil-cuantil) o un histograma, o mediante pruebas estadísticas formales como la prueba de Shapiro-Wilk.
+
+3.  Homocedasticidad de los residuales: La varianza de los errores (residuales) debe ser constante en todos los niveles de las variables independientes. Es decir, la dispersión de los residuos no debe depender del valor predicho (valor ajustado) por el modelo. Esta condición puede evaluarse visualmente mediante gráficos de dispersión de los residuos estandarizados frente a los valores ajustados o mediante la prueba de Breusch-Pagan.
+
+Al cumplir con estas tres condiciones, se garantiza que los resultados del análisis de regresión lineal sean válidos y confiables para realizar inferencias sobre las relaciones entre las variables involucradas.
 
 # Regresión Linear Múltiple
 
--   El comando `head()` muestra por defecto las primeras 6 filas del conjunto de datos especificado.
+El comando head() muestra por defecto las primeras 6 filas del conjunto de datos especificado.
 
 ```{r}
 head(data)
@@ -80,32 +84,24 @@ ggplot(data) +
   theme_minimal()
 ```
 
-Existe:
-
--   una relación negativa entre millas/galón y caballos de fuerza (los puntos más claros, que indican más caballos de fuerza, tienden a estar más presentes en niveles bajos de millas por galón)
-
--   una relación negativa entre millas/galón y desplazamiento (los puntos más grandes, que indican valores más grandes de desplazamiento, tienden a estar más presentes en niveles bajos de millas por galón).
-
-Por lo tanto, nos gustaría evaluar la relación entre el consumo de combustible y el peso, pero esta vez agregando información sobre la potencia y el desplazamiento. Al agregar esta información adicional, podemos **capturar solo la relación directa entre millas/galón y peso** (se cancela el efecto indirecto debido a la potencia y el desplazamiento).
-
--   Se realizan ajustes
+Se observa que existen dos relaciones negativas: una entre el consumo de combustible (millas/galón) y la potencia (caballos de fuerza), y otra entre el consumo de combustible y el desplazamiento del motor. Los puntos más claros, que indican mayor potencia, tienden a estar más presentes en niveles bajos de millas por galón, al igual que los puntos más grandes, que representan mayor desplazamiento. Por lo tanto, para entender mejor la relación entre el consumo de combustible y el peso del automóvil, se realizan ajustes adicionales incorporando información sobre la potencia y el desplazamiento. De esta manera, podemos evaluar la relación directa entre el consumo de combustible y el peso, sin que el efecto indirecto de la potencia y el desplazamiento influya en la interpretación.
 
 ```{r}
 model2 <- lm(mpg ~ wt + hp + disp, data = data)
 summary(model2)
 ```
 
-Concluimos:
+Las conclusiones obtenidas son las siguientes:
 
--   Existe una relación significativa y negativa entre millas/galón y peso, **siendo todo lo demás igual** . Entonces, para un aumento de una unidad en el peso (es decir, un aumento de 1000 libras), el número de millas/galón disminuye, en promedio, en 3,8, para un nivel constante de potencia y desplazamiento (pagpag-valor = 0,001).
+1\. Se encontró una relación significativa y negativa entre el consumo de millas por galón y el peso de los automóviles, manteniendo constantes la potencia y el desplazamiento. Es decir, por cada aumento de una unidad en el peso (equivalente a 1000 libras), en promedio, el consumo de millas por galón disminuye en 3.8 unidades (valor de p = 0.001).
 
--   Existe una relación significativa y negativa entre millas/galón y caballos de fuerza, siendo todo lo demás igual. Entonces, para un aumento de una unidad de caballo de fuerza, la distancia recorrida con un galón disminuye, en promedio, en 0,03 millas, para un nivel constante de peso y desplazamiento (pagpag-valor = 0,011).
+2\. Se identificó una relación significativa y negativa entre el consumo de millas por galón y la potencia de los automóviles, considerando un nivel constante de peso y desplazamiento. Por cada aumento de una unidad en la potencia, en promedio, el consumo de millas por galón disminuye en 0.03 unidades (valor de p = 0.011).
 
--   No rechazamos la hipótesis de que no hay relación entre millas/galón y el desplazamiento cuando el peso y la potencia permanecen constantes (porquepagpag-valor = 0,929 \> 0,05).
+3\. No se encontró evidencia para rechazar la hipótesis de que no existe una relación entre el consumo de millas por galón y el desplazamiento, siempre que el peso y la potencia se mantengan constantes (p-valor = 0.929 \> 0.05).
 
--   (Para completar, pero debe interpretarse solo cuando tiene sentido: para un peso, potencia y desplazamiento = 0, podemos esperar que un automóvil tenga, en promedio, un consumo de combustible de 37.11 millas/galón (pagpag-valor \< 0.001).)
+4\. Para completar la interpretación, cuando el peso, la potencia y el desplazamiento son iguales a cero, se estima que un automóvil tendría un consumo de combustible promedio de 37.11 millas por galón (valor de p \< 0.001).
 
-Para la ilustración, modelamos el consumo de combustible (mpg) sobre el peso (wt) y la forma del motor (vs). La variable (vs) tiene dos niveles:
+En el siguiente análisis, se ilustra el modelo del consumo de combustible (mpg) considerando el peso (wt) y la forma del motor (vs), siendo esta última una variable categórica con dos niveles.
 
 ```{r}
 # Grabando dat$vs
