@@ -1,0 +1,232 @@
+---
+title: "Regresión Linear Múltiple"
+format: pdf
+editor: visual
+author: Nicolás Jadán
+---
+
+**La regresión lineal múltiple** es una generalización de la regresión lineal simple, en el sentido de que este enfoque permite evaluar las relaciones lineales entre una variable de respuesta (cuantitativa) y varias variables explicativas (cuantitativas o cualitativas).
+
+-   Cargamos todas las librerías que vamos a utilizar.
+
+```{r}
+library(ggplot2)
+library(forcats)
+library(performance)
+library(visreg)
+library(ggstatsplot)
+#library(equatiomatic)
+library(car)
+library(carData)
+```
+
+Se realiza la evaluación de si existe una relación lineal entre la distancia recorrida con un galón de combustible y el peso de los automóviles. Utilizando el conjunto de datos `mtcars.`
+
+```{r}
+# Cargamos el conjunto de datos
+data <- mtcars
+```
+
+```{r}
+ggplot(data, aes(x = wt, y = mpg)) +
+  geom_point() +
+  labs(
+    y = "Miles per gallon",
+    x = "Car's weight (1000 lbs)"
+  ) +
+  theme_minimal()
+```
+
+El diagrama de dispersión muestra una relación negativa entra la distacnia recorrida de un galón de combustible y el peso de un auto.
+
+-   Para realizar una regresión lineal en R, usamos la función `lm ()` (que significa modelo lineal).
+
+```{r}
+model <- lm(mpg ~ wt, data = data)
+summary(model)
+```
+
+El valor *p* = 1,29e-10 \< 0,05, por lo que rechazamos la hipótesis nula en el nivel de significancia ⍺=5%. Por lo tanto, concluimos que existe una **relación significativa entre el peso de un automóvil y su consumo de combustible**.
+
+## Condiciones de Aplicación
+
+**Independencia:** Las observaciones deben ser independientes. Es el plan de muestreo y el diseño experimental los que suelen proporcionar información sobre esta condición. Si los datos provienen de diferentes individuos o unidades experimentales, por lo general son independientes. Por otro lado, si se miden los mismos individuos en diferentes períodos, los datos probablemente no sean independientes.
+
+**Normalidad de los residuos:** Para tamaños de muestra grandes, los intervalos de confianza y las pruebas de los coeficientes son (aproximadamente) válidos ya sea que el error siga una distribución normal o no (una consecuencia del teorema del límite central). Para tamaños de muestra pequeños, los residuos deben seguir una distribución normal. Esta condición se puede probar visualmente (a través de un gráfico QQ y/o un histograma), o más formalmente (a través de la prueba de Shapiro Wilk).
+
+**Homocedasticidad de los residuales:** La varianza de los errores debe ser constante. Hay una falta de homocedasticidad cuando la dispersión de los residuos aumenta con los valores predichos (valores ajustados). Esta condición se puede probar visualmente (trazando los residuos estandarizados frente a los valores ajustados) o más formalmente (a través de la prueba de Breusch-Pagan).
+
+# Regresión Linear Múltiple
+
+-   El comando `head()` muestra por defecto las primeras 6 filas del conjunto de datos especificado.
+
+```{r}
+head(data)
+```
+
+Se puede visualizar la relación entre el consumo de combustible de un automóvil (mpg) junto con su peso (wt), caballos de fuerza (hp) y desplazamiento (disp) (la cilindrada del motor es el volumen combinado de aire barrido (o desplazado) resultante del movimiento hacia arriba y hacia abajo de los pistones en los cilindros, generalmente cuanto más alto, más potente es el automóvil):
+
+```{r}
+ggplot(data) +
+  aes(x = wt, y = mpg, colour = hp, size = disp) +
+  geom_point() +
+  scale_color_gradient() +
+  labs(
+    y = "Miles per gallon",
+    x = "Weight (1000 lbs)",
+    color = "Horsepower",
+    size = "Displacement"
+  ) +
+  theme_minimal()
+```
+
+Existe:
+
+-   una relación negativa entre millas/galón y caballos de fuerza (los puntos más claros, que indican más caballos de fuerza, tienden a estar más presentes en niveles bajos de millas por galón)
+
+-   una relación negativa entre millas/galón y desplazamiento (los puntos más grandes, que indican valores más grandes de desplazamiento, tienden a estar más presentes en niveles bajos de millas por galón).
+
+Por lo tanto, nos gustaría evaluar la relación entre el consumo de combustible y el peso, pero esta vez agregando información sobre la potencia y el desplazamiento. Al agregar esta información adicional, podemos **capturar solo la relación directa entre millas/galón y peso** (se cancela el efecto indirecto debido a la potencia y el desplazamiento).
+
+-   Se realizan ajustes
+
+```{r}
+model2 <- lm(mpg ~ wt + hp + disp, data = data)
+summary(model2)
+```
+
+Concluimos:
+
+-   Existe una relación significativa y negativa entre millas/galón y peso, **siendo todo lo demás igual** . Entonces, para un aumento de una unidad en el peso (es decir, un aumento de 1000 libras), el número de millas/galón disminuye, en promedio, en 3,8, para un nivel constante de potencia y desplazamiento (pagpag-valor = 0,001).
+
+-   Existe una relación significativa y negativa entre millas/galón y caballos de fuerza, siendo todo lo demás igual. Entonces, para un aumento de una unidad de caballo de fuerza, la distancia recorrida con un galón disminuye, en promedio, en 0,03 millas, para un nivel constante de peso y desplazamiento (pagpag-valor = 0,011).
+
+-   No rechazamos la hipótesis de que no hay relación entre millas/galón y el desplazamiento cuando el peso y la potencia permanecen constantes (porquepagpag-valor = 0,929 \> 0,05).
+
+-   (Para completar, pero debe interpretarse solo cuando tiene sentido: para un peso, potencia y desplazamiento = 0, podemos esperar que un automóvil tenga, en promedio, un consumo de combustible de 37.11 millas/galón (pagpag-valor \< 0.001).)
+
+Para la ilustración, modelamos el consumo de combustible (mpg) sobre el peso (wt) y la forma del motor (vs). La variable (vs) tiene dos niveles:
+
+```{r}
+# Grabando dat$vs
+data$vs <- as.character(data$vs)
+data$vs <- fct_recode(data$vs,
+  "V-shaped" = "0",
+  "Straight" = "1"
+)
+
+model3 <- lm(mpg ~ wt + vs, data = data)
+summary(model3)
+```
+
+```{r}
+#check_model(model2)
+```
+
+Para la ilustración, comenzamos con un modelo con todas las variables en el conjunto de datos como variables independientes:
+
+```{r}
+## vs has already been transformed into factor
+## so only am is transformed here
+
+## Recoding dat$vs
+data$am <- as.character(data$am)
+data$am <- fct_recode(data$am,
+  "Automatic" = "0",
+  "Manual" = "1"
+)
+
+model4 <- lm(mpg ~ ., data = data)
+model4 <- step(model4, trace = FALSE)
+summary(model4)
+```
+
+Hay muchas formas de visualizar los resultados de una regresión lineal. Los 2 más fáciles son:
+
+1.  Visreg () que ilustra las relaciones entre las variables dependientes e independientes en diferentes gráficos (uno para cada variable independiente a menos que especifique qué relación desea ilustrar):
+
+```{r}
+visreg(model4)
+```
+
+2.  ggcoefstats () que ilustra los resultados en una sola parcela:
+
+```{r}
+ggcoefstats(model4)
+```
+
+```{r}
+#extract_eq(model4,
+ # use_coefs = TRUE, # display coefficients
+  #wrap = TRUE, # multiple lines
+  #terms_per_line = 2
+#)
+```
+
+### Predicciones
+
+La regresión lineal también se usa muy a menudo con **fines predictivos** . Los intervalos de confianza y predicción para **nuevos datos** se pueden calcular con predict ().
+
+```{r}
+# confidence interval for new data
+predict(model4,
+  new = data.frame(wt = 3, qsec = 18, am = "Manual"),
+  interval = "confidence",
+  level = .95
+)
+
+# prediction interval for new data
+predict(model4,
+  new = data.frame(wt = 3, qsec = 18, am = "Manual"),
+  interval = "prediction",
+  level = .95
+)
+```
+
+La diferencia entre el intervalo de confianza y el de predicción es que:
+
+-   un intervalo **de confianza** da el valor predicho para la **media** deY�para una nueva observación, mientras que
+
+-   un intervalo **de predicción** da el valor predicho para un **individuo** Y�para una nueva observación.
+
+### **Pruebas de Hipótesis LIneales**
+
+```{r}
+linearHypothesis(model4, c("wt = 0", "qsec = 0"))
+```
+
+Rechazamos la hipótesis nula y concluimos que al menos uno de β1 y β2 es diferente de 0 (pag-valor = 1.55e-09).
+
+### **Efecto general de las variables categóricas**
+
+Cuando las variables independientes son categóricas con k categorías, la tabla de regresión proporciona k valores:
+
+```{r}
+model5 <- lm(mpg ~ vs + am + as.factor(cyl), data = data)
+summary(model5)
+```
+
+```{r}
+Anova(model5)
+```
+
+### **Interacción**
+
+Existe un efecto **de interacción** entre los factores A y B **si el efecto del factor A sobre la respuesta depende del nivel que tome el factor** B.
+
+```{r}
+model6 <- lm(mpg ~ wt + am + wt:am, data = data)
+
+# Or in a shorter way:
+model6 <- lm(mpg ~ wt * am, data = data)
+
+summary(model6)
+```
+
+La forma más fácil de manejar la interacción es visualizar la relación para cada nivel de la variable categórica:
+
+```{r}
+visreg(model6, "wt", by = "am")
+```
+
+La relación entre el peso y las millas/galón es más fuerte (la pendiente es más pronunciada) para los automóviles con transmisión manual en comparación con los automóviles con transmisión automática.
