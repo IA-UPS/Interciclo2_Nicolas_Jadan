@@ -1,6 +1,6 @@
 ---
 title: "ANOVA"
-author: "Nicolas Jadan"
+author: "Paola Peralta"
 format: pdf
 editor: visual
 ---
